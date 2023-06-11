@@ -10,19 +10,72 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers
+
+  const user = users.find((user) => user.username === username)
+
+  if (!user) {
+    return response.status(404).json({error: "Username não existe"})
+  }
+
+  request.user = user
+  return next()
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request
+  
+  if(user.pro === false && user.todos.length < 10) {
+    user.next     
+  } 
+  
+  if(user.pro === false && user.todos.length >= 10) {
+    return response.status(403).json({error: "Você atingiu o limite da conta grátis"})
+  }
+  
+  return next()
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers
+  const { id } = request.params
+
+  // Você deve validar que o usuário exista, 
+  const user = users.find((user) => user.username === username)
+
+  if(!user){
+    return response.status(404).json()
+  }
+
+  // validar que o id seja um uuid 
+  if (!validate(id)) {
+    return response.status(400).json()
+  }
+
+  // e também validar que esse id pertence a um todo do usuário informado.
+  const validarID = user.todos.find((todo) => todo.id === id)
+
+  if (!validarID) {
+    return response.status(404).json()
+  }
+
+  request.user = user
+  request.todo = validarID
+
+  return next()
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params
+
+  const user = users.find((user) => user.id === id)
+
+  if(!user) {
+    return response.status(404).json()
+  }
+
+  request.user = user
+  return next()
 }
 
 app.post('/users', (request, response) => {
